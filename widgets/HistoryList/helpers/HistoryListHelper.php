@@ -2,13 +2,16 @@
 
 namespace app\widgets\HistoryList\helpers;
 
-use app\models\Call;
-use app\models\Customer;
-use app\models\History;
+use app\models\{Call, Customer, History};
 
+/**
+ * Class HistoryListHelper
+ * @package app\widgets\HistoryList\helpers
+ * @deprecated use app\widgets\HistoryList\adapters\Base::getAdapterByModel($model)->getBody()
+ */
 class HistoryListHelper
 {
-    public static function getBodyByModel(History $model)
+    public static function getBodyByModel(History $model): string
     {
         switch ($model->event) {
             case History::EVENT_CREATED_TASK:
@@ -18,10 +21,7 @@ class HistoryListHelper
                 return "$model->eventText: " . ($task->title ?? '');
             case History::EVENT_INCOMING_SMS:
             case History::EVENT_OUTGOING_SMS:
-                return $model->sms->message ? $model->sms->message : '';
-            case History::EVENT_OUTGOING_FAX:
-            case History::EVENT_INCOMING_FAX:
-                return $model->eventText;
+                return $model->sms->message ?: '';
             case History::EVENT_CUSTOMER_CHANGE_TYPE:
                 return "$model->eventText " .
                     (Customer::getTypeTextByType($model->getDetailOldValue('type')) ?? "not set") . ' to ' .
@@ -35,6 +35,8 @@ class HistoryListHelper
                 /** @var Call $call */
                 $call = $model->call;
                 return ($call ? $call->totalStatusText . ($call->getTotalDisposition(false) ? " <span class='text-grey'>" . $call->getTotalDisposition(false) . "</span>" : "") : '<i>Deleted</i> ');
+            case History::EVENT_OUTGOING_FAX:
+            case History::EVENT_INCOMING_FAX:
             default:
                 return $model->eventText;
         }
